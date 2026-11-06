@@ -19,18 +19,44 @@ Built explicitly for high-performance routines using an intentional dark theme (
 
 ## 🛠️ Tech Stack & Architecture
 
-*   **Frontend:** Cross-platform Mobile Framework (Flutter / React Native)
-*   **Backend Database:** Google Cloud Firestore
-*   **Local State Management:** High-performance reactive data streams
+*   **Frontend:** Expo (React Native) + Expo Router
+*   **Backend Database:** Google Cloud Firestore (with AsyncStorage local demo fallback)
+*   **Local State Management:** Zustand reactive stores
+
+### App modules (`ui` branch)
+
+| Tab | Module | Path |
+| --- | --- | --- |
+| Stars | Star Bank, daily tasks, penalties, rewards shop | `app/(tabs)/index.tsx` |
+| Timer | Tomodachi pixel focus/break timer | `app/(tabs)/timer.tsx` |
+| Journal | Daily / workout / trading logs + MH gauge | `app/(tabs)/journal.tsx` |
+| Media | Mindset Mastery / Orthodox Omilies feeds | `app/(tabs)/media.tsx` |
 
 ### Firestore Document Structure
 ```text
 /users/{userId}/
-  ├── profile (document) -> { currentWeight: 87, targetWeight: 73, currentPhase: 1, starBank: 0.0 }
-  ├── daily_logs (collection) -> {date_YYYY-MM-DD} -> { waterMl: 4000, calories: 2100, proteinG: 160, morningCrucibleCompleted: true, fastingWindowMet: true, nicotineSlips: 0, mentalHealthScore: 8, journalText: "" }
-  ├── workout_logs (collection) -> {logId} -> { date: Timestamp, type: "calisthenics"|"running", distanceKm: 3.0, calisthenicsReps: {}, rirTarget: 3, physicalNotes: "" }
-  ├── trading_logs (collection) -> {tradeId} -> { date: Timestamp, pair: "EURUSD", positionType: "buy", resultPips: 40, marketAnalysis: "" }
+  ├── profile/main -> { currentWeight, targetWeight, currentPhase, waterTargetMl, starBank }
+  ├── daily_logs/{YYYY-MM-DD} -> hydration, macros, task flags, stars, mentalHealthScore, journalText
+  ├── workout_logs/{logId} -> running + calisthenics sets/reps, RIR, physicalNotes
+  ├── trading_logs/{tradeId} -> pair, entry/exit, pips, analysis
 ```
+
+Star mutations and reward redemptions run through Firestore transactions when Firebase env vars are set (`src/services/starLedger.ts`). Without config, the same API writes to AsyncStorage so the UI remains fully interactive.
+
+---
+
+## ▶️ Run locally
+
+```bash
+git checkout ui
+npm install
+cp .env.example .env   # optional Firebase web config
+npm run start          # Expo dev server
+npm run web            # responsive web preview
+npm run typecheck
+```
+
+Amber status dot (top-right) = local demo mode. Emerald = Firestore configured.
 
 ---
 
