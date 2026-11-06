@@ -8,8 +8,9 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, typography } from '../theme';
+import { FLOATING_NAV_CONTENT_INSET } from '../constants/layout';
 
 interface ScreenProps {
   title: string;
@@ -28,15 +29,32 @@ export function Screen({
   rightSlot,
   contentStyle,
 }: ScreenProps) {
+  const insets = useSafeAreaInsets();
+  const bottomPad = FLOATING_NAV_CONTENT_INSET + Math.max(insets.bottom, 8);
+
   const body = scroll ? (
     <ScrollView
-      contentContainerStyle={[styles.content, contentStyle]}
+      contentContainerStyle={[
+        styles.content,
+        { paddingBottom: bottomPad },
+        contentStyle,
+      ]}
       showsVerticalScrollIndicator={false}
+      contentInsetAdjustmentBehavior="automatic"
     >
       {children}
     </ScrollView>
   ) : (
-    <View style={[styles.content, styles.flex, contentStyle]}>{children}</View>
+    <View
+      style={[
+        styles.content,
+        styles.flex,
+        { paddingBottom: bottomPad },
+        contentStyle,
+      ]}
+    >
+      {children}
+    </View>
   );
 
   return (
@@ -46,7 +64,7 @@ export function Screen({
       end={{ x: 1, y: 1 }}
       style={styles.flex}
     >
-      <SafeAreaView style={styles.flex} edges={['top', 'left', 'right']}>
+      <View style={[styles.flex, { paddingTop: Math.max(insets.top, 10) }]}>
         <View style={styles.header}>
           <View style={styles.headerText}>
             <Text style={typography.brand}>ASKESIS</Text>
@@ -56,25 +74,26 @@ export function Screen({
           {rightSlot}
         </View>
         {body}
-      </SafeAreaView>
+      </View>
     </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
+  flex: { flex: 1, width: '100%', maxWidth: '100%' },
   header: {
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 12,
+    paddingHorizontal: 18,
+    paddingTop: 4,
+    paddingBottom: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'flex-start',
     gap: 12,
   },
-  headerText: { flex: 1, gap: 4 },
+  headerText: { flex: 1, gap: 4, minWidth: 0 },
   content: {
-    paddingHorizontal: 20,
-    paddingBottom: 36,
-    gap: 16,
+    paddingHorizontal: 18,
+    gap: 14,
+    width: '100%',
   },
 });

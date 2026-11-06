@@ -8,14 +8,16 @@
     "scheme": "askesis",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
+    "primaryColor": "#121824",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#121824"
     },
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.askesis.app"
+      "supportsTablet": false,
+      "bundleIdentifier": "com.askesis.app",
+      "requireFullScreen": true
     },
     "android": {
       "adaptiveIcon": {
@@ -25,11 +27,14 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "package": "com.askesis.app",
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "softwareKeyboardLayoutMode": "resize"
     },
     "web": {
       "favicon": "./assets/favicon.png",
-      "bundler": "metro"
+      "bundler": "metro",
+      "output": "single",
+      "name": "Askesis"
     },
     "plugins": [
       "expo-router",

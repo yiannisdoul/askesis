@@ -9,9 +9,11 @@ import {
   DMSans_700Bold,
 } from '@expo-google-fonts/dm-sans';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { colors } from '../src/theme';
 import { useStarStore } from '../src/stores/starStore';
 import { isFirebaseConfigured } from '../src/services/firebase';
+import { MobileCanvas } from '../src/components/MobileCanvas';
 
 export default function RootLayout() {
   const hydrate = useStarStore((state) => state.hydrate);
@@ -36,28 +38,32 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={styles.flex}>
-      <StatusBar style="light" />
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: colors.background },
-        }}
-      >
-        <Stack.Screen name="(tabs)" />
-      </Stack>
-      {/* Mode badge for operators: local vs Firestore */}
-      <View pointerEvents="none" style={styles.modeBadge}>
-        <View
-          style={[
-            styles.dot,
-            {
-              backgroundColor: isFirebaseConfigured
-                ? colors.emerald
-                : colors.amber,
-            },
-          ]}
-        />
-      </View>
+      <SafeAreaProvider>
+        <MobileCanvas>
+          <StatusBar style="light" />
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: colors.background },
+              animation: 'fade',
+            }}
+          >
+            <Stack.Screen name="(tabs)" />
+          </Stack>
+          <View pointerEvents="none" style={styles.modeBadge}>
+            <View
+              style={[
+                styles.dot,
+                {
+                  backgroundColor: isFirebaseConfigured
+                    ? colors.emerald
+                    : colors.amber,
+                },
+              ]}
+            />
+          </View>
+        </MobileCanvas>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }

@@ -1,38 +1,29 @@
 import { Tabs } from 'expo-router';
-import { Text } from 'react-native';
-import { colors, fonts } from '../../src/theme';
-
-function TabIcon({ label, focused }: { label: string; focused: boolean }) {
-  return (
-    <Text
-      style={{
-        fontFamily: fonts.bodyBold,
-        fontSize: 11,
-        color: focused ? colors.amber : colors.textDim,
-      }}
-    >
-      {label}
-    </Text>
-  );
-}
+import {
+  FloatingPillTabBar,
+  type FloatingPillTabBarProps,
+} from '../../src/components/FloatingPillTabBar';
+import { colors } from '../../src/theme';
 
 export default function TabsLayout() {
   return (
     <Tabs
+      tabBar={(props) => (
+        <FloatingPillTabBar {...(props as unknown as FloatingPillTabBarProps)} />
+      )}
       screenOptions={{
         headerShown: false,
+        tabBarShowLabel: false,
         tabBarStyle: {
-          backgroundColor: colors.backgroundElevated,
-          borderTopColor: colors.border,
-          height: 64,
-          paddingBottom: 8,
-          paddingTop: 8,
+          position: 'absolute',
+          backgroundColor: 'transparent',
+          borderTopWidth: 0,
+          elevation: 0,
+          shadowOpacity: 0,
+          height: 0,
         },
-        tabBarActiveTintColor: colors.amber,
-        tabBarInactiveTintColor: colors.textDim,
-        tabBarLabelStyle: {
-          fontFamily: fonts.bodyMedium,
-          fontSize: 11,
+        sceneStyle: {
+          backgroundColor: colors.background,
         },
       }}
     >
@@ -40,28 +31,28 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'Stars',
-          tabBarIcon: ({ focused }) => <TabIcon label="★" focused={focused} />,
+          tabBarAccessibilityLabel: 'Stars ledger',
         }}
       />
       <Tabs.Screen
         name="timer"
         options={{
           title: 'Timer',
-          tabBarIcon: ({ focused }) => <TabIcon label="⏱" focused={focused} />,
+          tabBarAccessibilityLabel: 'Tomodachi study timer',
         }}
       />
       <Tabs.Screen
         name="journal"
         options={{
           title: 'Journal',
-          tabBarIcon: ({ focused }) => <TabIcon label="☰" focused={focused} />,
+          tabBarAccessibilityLabel: 'Unified journal',
         }}
       />
       <Tabs.Screen
         name="media"
         options={{
           title: 'Media',
-          tabBarIcon: ({ focused }) => <TabIcon label="▶" focused={focused} />,
+          tabBarAccessibilityLabel: 'Source refresher media',
         }}
       />
     </Tabs>

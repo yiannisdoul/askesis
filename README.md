@@ -51,8 +51,10 @@ Star mutations and reward redemptions run through Firestore transactions when Fi
 git checkout ui
 npm install
 cp .env.example .env   # optional Firebase web config
-npm run start          # Expo dev server
-npm run web            # responsive web preview
+npm run dev            # Expo Metro bundler (alias of start)
+npm run android        # Metro + open Android emulator/device
+npm run ios            # Metro + open iOS simulator (macOS)
+npm run web            # portrait phone-canvas web preview
 npm run typecheck
 ```
 

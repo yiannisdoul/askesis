@@ -31,8 +31,8 @@ export const typography = {
   } satisfies TextStyle,
   h1: {
     fontFamily: fonts.bodyBold,
-    fontSize: 28,
-    lineHeight: 34,
+    fontSize: 24,
+    lineHeight: 30,
     color: colors.textPrimary,
   } satisfies TextStyle,
   h2: {
@@ -55,8 +55,8 @@ export const typography = {
   } satisfies TextStyle,
   metric: {
     fontFamily: fonts.bodyBold,
-    fontSize: 42,
-    lineHeight: 48,
+    fontSize: 48,
+    lineHeight: 54,
     color: colors.emerald,
   } satisfies TextStyle,
 } as const;
