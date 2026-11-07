@@ -23,7 +23,7 @@ export function PenaltyPanel({
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>Administration · Penalties</Text>
           <Text style={typography.label}>
-            Half-rate discipline triggers (−0.5 / −1.0)
+            Manual overrides. Prefer per-task Slip toggles + critical-miss.
           </Text>
         </View>
         <PrimaryButton

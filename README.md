@@ -8,7 +8,7 @@ Built explicitly for high-performance routines using an intentional dark theme (
 
 ## 🚀 Core Pillars
 
-*   **The Star Ledger System:** A loss-aversion behavioral framework. Daily morning execution and fasting consistency earn *Stars* used to redeem guilt-free leisure blocks (gaming, movies). Delinquencies trigger asymmetric penalties at exactly half the gain rate.
+*   **The Star Ledger System:** A loss-aversion behavioral economy. Dynamic sections split their star value evenly across tasks. Completions earn the fractional value; slips deduct 50%; missing an entire section triggers an extra 50% section fine. Negative balances lock the Rewards Shop until debt + a 50% fine target is cleared.
 *   **The Morning Crucible:** Structured timeline integration grouping dynamic prayer, low-impact running intervals, bodyweight calisthenics, and active recovery dog-walking routines before an 8:00 AM fast-break.
 *   **19-5 Intermittent Fasting Guard:** Strict nutrient-partitioning ledger supporting a phased caloric step-down from 87kg to 72-74kg, fully compatible with traditional Orthodox Wednesday/Friday vegan fasting periods.
 *   **Tomodachi Retro Study Timer:** Fully customizable focus/break interval block matrix designed to optimize deep software engineering and Forex trade monitoring sessions.
@@ -27,7 +27,7 @@ Built explicitly for high-performance routines using an intentional dark theme (
 
 | Tab | Module | Path |
 | --- | --- | --- |
-| Stars | Star Bank, daily tasks, penalties, rewards shop | `app/(tabs)/index.tsx` |
+| Stars | Star Bank, dynamic sections/tasks, shop lockout, catalog CRUD | `app/(tabs)/index.tsx` |
 | Timer | Tomodachi pixel focus/break timer | `app/(tabs)/timer.tsx` |
 | Journal | Daily / workout / trading logs + MH gauge | `app/(tabs)/journal.tsx` |
 | Media | Mindset Mastery / Orthodox Omilies feeds | `app/(tabs)/media.tsx` |
@@ -35,8 +35,8 @@ Built explicitly for high-performance routines using an intentional dark theme (
 ### Firestore Document Structure
 ```text
 /users/{userId}/
-  ├── profile/main -> { currentWeight, targetWeight, currentPhase, waterTargetMl, starBank }
-  ├── daily_logs/{YYYY-MM-DD} -> hydration, macros, task flags, stars, mentalHealthScore, journalText
+  ├── profile/main -> { ..., starBank, sections[], shopItems[] }
+  ├── daily_logs/{YYYY-MM-DD} -> hydration, macros, taskStatuses, criticalMissSectionIds, stars, journalText
   ├── workout_logs/{logId} -> running + calisthenics sets/reps, RIR, physicalNotes
   ├── trading_logs/{tradeId} -> pair, entry/exit, pips, analysis
 ```

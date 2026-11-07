@@ -7,6 +7,7 @@ import {
   type UserProfile,
   type WorkoutLog,
 } from '../models/types';
+import { normalizeDailyLog, normalizeProfile } from '../utils/economy';
 import { todayKey } from '../utils/dates';
 
 const KEYS = {
@@ -32,21 +33,24 @@ async function writeJson<T>(key: string, value: T): Promise<void> {
 
 export const localStore = {
   async getProfile(): Promise<UserProfile> {
-    return readJson(KEYS.profile, DEFAULT_PROFILE);
+    const raw = await readJson<Partial<UserProfile> | null>(KEYS.profile, null);
+    return normalizeProfile(raw ?? DEFAULT_PROFILE);
   },
 
   async saveProfile(profile: UserProfile): Promise<void> {
-    await writeJson(KEYS.profile, profile);
+    await writeJson(KEYS.profile, normalizeProfile(profile));
   },
 
   async getDailyLog(date = todayKey()): Promise<DailyLog> {
-    return readJson(`${KEYS.dailyPrefix}${date}`, {
-      ...EMPTY_DAILY_LOG,
-    });
+    const raw = await readJson<Partial<DailyLog> | null>(
+      `${KEYS.dailyPrefix}${date}`,
+      null,
+    );
+    return normalizeDailyLog(raw ?? EMPTY_DAILY_LOG);
   },
 
   async saveDailyLog(date: string, log: DailyLog): Promise<void> {
-    await writeJson(`${KEYS.dailyPrefix}${date}`, log);
+    await writeJson(`${KEYS.dailyPrefix}${date}`, normalizeDailyLog(log));
   },
 
   async listWorkouts(): Promise<WorkoutLog[]> {

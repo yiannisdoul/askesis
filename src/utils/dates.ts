@@ -7,11 +7,23 @@ export function todayKey(date = new Date()): string {
 }
 
 export function formatStars(value: number): string {
-  return value.toFixed(1);
+  const rounded = roundStars(value);
+  if (Number.isInteger(rounded)) return String(rounded);
+  const fixed = rounded.toFixed(3).replace(/\.?0+$/, '');
+  return fixed;
 }
 
+/**
+ * Round to 3 decimal places. Negatives are allowed — no bankruptcy floor.
+ * (Supersedes the old clamp-at-0 guardrail.)
+ */
+export function roundStars(value: number): number {
+  return Math.round(value * 1000) / 1000;
+}
+
+/** @deprecated Use roundStars — kept for call-sites during migration. */
 export function clampStars(value: number): number {
-  return Math.max(0, Math.round(value * 10) / 10);
+  return roundStars(value);
 }
 
 export function formatTimer(totalSeconds: number): string {
