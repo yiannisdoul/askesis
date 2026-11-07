@@ -25,21 +25,27 @@ export function Field({ label, style, ...props }: FieldProps) {
 }
 
 const styles = StyleSheet.create({
-  wrap: { gap: 6 },
+  wrap: {
+    width: '100%',
+    gap: 6,
+  },
   label: {
     fontFamily: fonts.bodyMedium,
     color: colors.cyan,
     fontSize: 13,
     letterSpacing: 0.4,
+    width: '100%',
   },
   input: {
-    minHeight: 46,
+    width: '100%',
+    minHeight: 44,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.backgroundMuted,
     color: colors.textPrimary,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     fontFamily: fonts.body,
     fontSize: 16,
   },

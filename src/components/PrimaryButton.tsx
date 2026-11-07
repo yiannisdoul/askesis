@@ -55,11 +55,13 @@ export function PrimaryButton({
 
 const styles = StyleSheet.create({
   button: {
-    minHeight: 48,
+    minHeight: 44,
+    minWidth: 44,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   label: {
     fontFamily: fonts.bodyBold,

@@ -7,6 +7,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ACTIVITY_PRESETS } from '../constants/starFramework';
 import type { ShopItem } from '../models/types';
 import { colors, fonts, typography } from '../theme';
@@ -14,6 +15,8 @@ import { formatStars } from '../utils/dates';
 import { isShopLocked, shopUnlockTarget } from '../utils/economy';
 import { Field } from './Field';
 import { PrimaryButton } from './PrimaryButton';
+
+const TOUCH_MIN = 44;
 
 interface RewardsShopProps {
   open: boolean;
@@ -45,6 +48,7 @@ export function RewardsShop({
   onUpdateItem,
   onRemoveItem,
 }: RewardsShopProps) {
+  const insets = useSafeAreaInsets();
   const locked = isShopLocked(balance);
   const unlockTarget = shopUnlockTarget(balance);
 
@@ -119,13 +123,25 @@ export function RewardsShop({
   return (
     <Modal visible={open} animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.backdrop}>
-        <View style={styles.sheet}>
+        <View
+          style={[
+            styles.sheet,
+            {
+              paddingBottom: Math.max(insets.bottom, 12),
+            },
+          ]}
+        >
+          <View style={styles.handle} />
           <ScrollView
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
             contentContainerStyle={styles.scrollContent}
           >
-            <View style={styles.titleRow}>
+            <View style={styles.headerStack}>
               <Text style={styles.title}>Rewards Shop</Text>
+              <Text style={styles.balanceLine}>
+                Available balance: {formatStars(balance)} ★
+              </Text>
               <PrimaryButton
                 label={manageMode ? 'Done' : 'Edit Catalog'}
                 tone="muted"
@@ -133,12 +149,9 @@ export function RewardsShop({
                   setManageMode((v) => !v);
                   if (manageMode) resetForm();
                 }}
-                style={styles.manageBtn}
+                style={styles.fullWidthBtn}
               />
             </View>
-            <Text style={typography.body}>
-              Available balance: {formatStars(balance)} ★
-            </Text>
 
             {locked ? (
               <View style={styles.lockOverlay}>
@@ -153,40 +166,46 @@ export function RewardsShop({
               </View>
             ) : null}
 
-            <View style={locked ? styles.catalogDimmed : undefined}>
+            <View style={[styles.catalog, locked ? styles.catalogDimmed : null]}>
               {items.map((reward) => {
                 const affordable = !locked && balance >= reward.cost;
                 return (
                   <View key={reward.id} style={styles.item}>
-                    <View style={{ flex: 1 }}>
+                    <View style={styles.itemCopy}>
                       <Text style={styles.itemTitle}>{reward.title}</Text>
                       {reward.description ? (
-                        <Text style={typography.label}>{reward.description}</Text>
+                        <Text style={styles.itemDescription}>
+                          {reward.description}
+                        </Text>
                       ) : null}
                       <Text style={styles.cost}>{reward.cost} stars</Text>
                     </View>
+
                     {manageMode ? (
                       <View style={styles.itemActions}>
                         <PrimaryButton
                           label="Edit"
                           tone="cyan"
                           onPress={() => beginEdit(reward)}
-                          style={styles.smallBtn}
+                          style={styles.fullWidthBtn}
                         />
                         <PrimaryButton
                           label="Del"
                           tone="crimson"
                           onPress={() => onRemoveItem(reward.id)}
-                          style={styles.smallBtn}
+                          style={styles.fullWidthBtn}
                         />
                       </View>
                     ) : (
                       <PrimaryButton
-                        label={locked ? 'Locked' : affordable ? 'Redeem' : 'Need ★'}
+                        label={
+                          locked ? 'Locked' : affordable ? 'Redeem' : 'Need ★'
+                        }
                         tone={affordable ? 'amber' : 'muted'}
                         disabled={!affordable}
                         loading={loading}
                         onPress={() => onRedeem(reward.id)}
+                        style={styles.fullWidthBtn}
                       />
                     )}
                   </View>
@@ -199,13 +218,14 @@ export function RewardsShop({
                 <Text style={styles.formTitle}>
                   {editingId ? 'Edit Item' : 'Add Item'}
                 </Text>
+
                 <Text style={styles.presetLabel}>Activity Generator</Text>
                 <View style={styles.dropdown}>
                   <Pressable
-                    onPress={() => setPresetMenuOpen((open) => !open)}
+                    onPress={() => setPresetMenuOpen((isOpen) => !isOpen)}
                     style={styles.dropdownTrigger}
                   >
-                    <Text style={styles.dropdownTriggerText}>
+                    <Text style={styles.dropdownTriggerText} numberOfLines={2}>
                       {selectedPresetLabel}
                     </Text>
                     <Text style={styles.dropdownCaret}>
@@ -214,7 +234,7 @@ export function RewardsShop({
                   </Pressable>
                   {presetMenuOpen ? (
                     <View style={styles.dropdownMenu}>
-                      {ACTIVITY_PRESETS.map((preset) => {
+                      {ACTIVITY_PRESETS.map((preset, index) => {
                         const active = selectedPreset === preset.id;
                         return (
                           <Pressable
@@ -222,6 +242,7 @@ export function RewardsShop({
                             onPress={() => applyPreset(preset.id)}
                             style={[
                               styles.dropdownOption,
+                              index === 0 && styles.dropdownOptionFirst,
                               active && styles.dropdownOptionActive,
                             ]}
                           >
@@ -242,7 +263,7 @@ export function RewardsShop({
                     </View>
                   ) : null}
                 </View>
-                <Text style={typography.label}>
+                <Text style={styles.helperText}>
                   Selecting an activity auto-fills title and price for immediate
                   create or edit.
                 </Text>
@@ -252,12 +273,14 @@ export function RewardsShop({
                   value={title}
                   onChangeText={setTitle}
                   placeholder="Reward title"
+                  style={styles.fieldInput}
                 />
                 <Field
                   label="Description"
                   value={description}
                   onChangeText={setDescription}
                   placeholder="Optional detail"
+                  style={styles.fieldInput}
                 />
                 <Field
                   label="Cost (stars)"
@@ -265,7 +288,9 @@ export function RewardsShop({
                   onChangeText={setCost}
                   keyboardType="decimal-pad"
                   placeholder="e.g. 3"
+                  style={styles.fieldInput}
                 />
+
                 <View style={styles.formActions}>
                   <PrimaryButton
                     label={editingId ? 'Save Changes' : 'Create Item'}
@@ -273,14 +298,14 @@ export function RewardsShop({
                     loading={loading}
                     disabled={!title.trim() || !cost.trim()}
                     onPress={submitForm}
-                    style={{ flex: 1 }}
+                    style={styles.fullWidthBtn}
                   />
                   {editingId ? (
                     <PrimaryButton
                       label="Cancel"
                       tone="muted"
                       onPress={resetForm}
-                      style={{ minWidth: 96 }}
+                      style={styles.fullWidthBtn}
                     />
                   ) : null}
                 </View>
@@ -300,40 +325,64 @@ export function RewardsShop({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
+    width: '100%',
     backgroundColor: colors.overlay,
     justifyContent: 'flex-end',
   },
   sheet: {
-    maxHeight: '92%',
+    width: '100%',
+    maxHeight: '94%',
     backgroundColor: colors.backgroundElevated,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     borderColor: colors.border,
     borderWidth: 1,
+    overflow: 'hidden',
+  },
+  handle: {
+    alignSelf: 'center',
+    width: 44,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.border,
+    marginTop: 10,
+    marginBottom: 4,
   },
   scrollContent: {
-    padding: 20,
-    gap: 14,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    width: '100%',
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 20,
     gap: 12,
+  },
+  headerStack: {
+    width: '100%',
+    gap: 10,
   },
   title: {
     fontFamily: fonts.bodyBold,
-    fontSize: 24,
+    fontSize: 22,
+    lineHeight: 28,
     color: colors.amber,
-    flex: 1,
+    width: '100%',
   },
-  manageBtn: { minWidth: 120 },
+  balanceLine: {
+    ...typography.body,
+    width: '100%',
+  },
+  fullWidthBtn: {
+    width: '100%',
+    minHeight: TOUCH_MIN,
+    alignSelf: 'stretch',
+  },
   lockOverlay: {
-    borderRadius: 16,
+    width: '100%',
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: colors.crimson,
     backgroundColor: 'rgba(255, 23, 68, 0.18)',
-    padding: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
     gap: 8,
   },
   lockEyebrow: {
@@ -345,7 +394,7 @@ const styles = StyleSheet.create({
   lockHeadline: {
     fontFamily: fonts.bodyBold,
     color: colors.textPrimary,
-    fontSize: 18,
+    fontSize: 17,
     lineHeight: 24,
   },
   lockBody: {
@@ -354,33 +403,51 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
+  catalog: {
+    width: '100%',
+    gap: 10,
+  },
   catalogDimmed: {
     opacity: 0.45,
   },
   item: {
-    flexDirection: 'row',
-    gap: 12,
-    alignItems: 'center',
-    paddingVertical: 10,
+    width: '100%',
+    gap: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 2,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.border,
+  },
+  itemCopy: {
+    width: '100%',
+    gap: 4,
   },
   itemTitle: {
     fontFamily: fonts.bodyBold,
     color: colors.textPrimary,
     fontSize: 16,
+    lineHeight: 22,
+  },
+  itemDescription: {
+    ...typography.label,
+    width: '100%',
   },
   cost: {
-    marginTop: 4,
+    marginTop: 2,
     fontFamily: fonts.bodyMedium,
     color: colors.cyan,
+    fontSize: 14,
   },
-  itemActions: { gap: 8 },
-  smallBtn: { minWidth: 64, minHeight: 40 },
+  itemActions: {
+    width: '100%',
+    gap: 8,
+  },
   form: {
-    gap: 10,
-    padding: 14,
-    borderRadius: 16,
+    width: '100%',
+    gap: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.backgroundMuted,
@@ -388,42 +455,50 @@ const styles = StyleSheet.create({
   formTitle: {
     fontFamily: fonts.bodyBold,
     color: colors.amber,
-    fontSize: 16,
+    fontSize: 17,
+    width: '100%',
   },
   presetLabel: {
     fontFamily: fonts.bodyMedium,
     color: colors.cyan,
     fontSize: 13,
     letterSpacing: 0.4,
+    width: '100%',
   },
   dropdown: {
-    gap: 0,
+    width: '100%',
   },
   dropdownTrigger: {
-    minHeight: 46,
+    width: '100%',
+    minHeight: TOUCH_MIN,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.backgroundElevated,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 8,
+    gap: 10,
   },
   dropdownTriggerText: {
     flex: 1,
     fontFamily: fonts.body,
     color: colors.textPrimary,
     fontSize: 15,
+    lineHeight: 20,
   },
   dropdownCaret: {
     fontFamily: fonts.bodyBold,
     color: colors.cyan,
     fontSize: 14,
+    minWidth: TOUCH_MIN,
+    textAlign: 'center',
   },
   dropdownMenu: {
-    marginTop: 6,
+    width: '100%',
+    marginTop: 8,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
@@ -431,14 +506,19 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   dropdownOption: {
+    width: '100%',
+    minHeight: TOUCH_MIN,
     paddingVertical: 12,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     gap: 10,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.border,
+  },
+  dropdownOptionFirst: {
+    borderTopWidth: 0,
   },
   dropdownOptionActive: {
     backgroundColor: 'rgba(0, 229, 255, 0.12)',
@@ -448,6 +528,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyMedium,
     color: colors.textPrimary,
     fontSize: 14,
+    lineHeight: 20,
   },
   dropdownOptionTextActive: {
     color: colors.cyan,
@@ -457,11 +538,26 @@ const styles = StyleSheet.create({
     color: colors.amber,
     fontSize: 13,
   },
-  formActions: {
-    flexDirection: 'row',
-    gap: 10,
+  helperText: {
+    ...typography.label,
+    width: '100%',
   },
-  close: { alignItems: 'center', paddingVertical: 8 },
+  fieldInput: {
+    width: '100%',
+    minHeight: TOUCH_MIN,
+  },
+  formActions: {
+    width: '100%',
+    gap: 8,
+    marginTop: 4,
+  },
+  close: {
+    width: '100%',
+    minHeight: TOUCH_MIN,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+  },
   closeText: {
     fontFamily: fonts.bodyMedium,
     color: colors.textSecondary,
