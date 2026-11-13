@@ -1,0 +1,59 @@
+---
+description: Core Askesis agent workflow — strict TypeScript, no hallucinated deps, plan-then-approve before multi-file edits
+alwaysApply: true
+---
+
+# Core workflow (always on)
+
+You are working in **Askesis**: Expo SDK 58 + React Native + TypeScript + Zustand + Firebase/AsyncStorage. Read `AGENTS.md` for architecture. Code wins over `3_Month_Reconstruction_Blueprint.md` on conflicts.
+
+## Strict TypeScript
+
+- Keep `strict` typing. Prefer explicit interfaces from `src/models/types.ts`.
+- No `any` unless bridging an unavoidable third-party gap; narrow immediately.
+- Export shared domain types from `src/models/types.ts`, not from screens.
+- After substantive edits, run `npm run typecheck` (`tsc --noEmit`). `npm run lint` is the same command.
+
+## No hallucinated dependencies
+
+- Only import packages already listed in `package.json`.
+- Do **not** invent Vue, Tailwind, NativeWind, Redux, React Query, Expo modules, or Firebase APIs that are not already used.
+- If a new dependency is truly required, stop, name it, justify it, and wait for human approval before adding it.
+- Prefer existing patterns: Zustand stores, `starLedger` / `journalService`, `StyleSheet` + `src/theme`, relative imports matching the file you edit.
+
+## Architecture guardrails
+
+- UI (`app/**`) → stores / components only. No direct AsyncStorage or Firestore from screens.
+- Star math → `src/utils/economy.ts` + `src/services/starLedger.ts`.
+- Journal writes → `src/services/journalService.ts`.
+- Colors / fonts → `src/theme` tokens only.
+- Do not reintroduce a hard floor of zero on `starBank`; negative balances + shop lockout are intentional.
+
+## Plan → approve → edit (multi-file tasks)
+
+On any task that touches **more than one file**, or changes types/services/stores/screens together:
+
+1. **Output an implementation plan** first:
+   - Goal (1–2 sentences)
+   - Dependency-ordered checklist (files + what changes)
+   - Risks / dual-persistence notes
+   - Verification (`npm run typecheck`, manual smoke paths)
+2. **Wait for explicit human approval** before creating, modifying, or deleting files.
+3. After approval, implement in small slices; do not expand scope silently.
+4. If discovery invalidates the plan, stop and re-propose.
+
+Single-file typo / comment / one-liner fixes may proceed without a plan.
+
+## Human-in-the-loop phases
+
+Align with `AGENTS.md`:
+
+1. **Architect Blueprint** — structure only; no implementation code; wait for approval.
+2. **Modular Execution** — implement approved checklist items.
+3. **Self-Audit & QA** — diff vs plan, dual persistence, theme/economy rules, typecheck, summary.
+
+## Output discipline
+
+- Prefer complete, production-ready code — no `TODO: implement here` placeholders.
+- Do not drive-by refactor unrelated files.
+- Match existing naming, import style, and StyleSheet patterns in the touched area.

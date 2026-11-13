@@ -1,0 +1,74 @@
+---
+description: Askesis frontend standards — Expo Router screens, React Native StyleSheet, theme tokens, mobile-first PWA/phone-canvas layout. Applies to UI source files.
+globs:
+  - "app/**/*.tsx"
+  - "src/components/**/*.tsx"
+  - "src/theme/**/*.ts"
+  - "src/constants/layout.ts"
+  - "**/*.vue"
+alwaysApply: false
+---
+
+# Frontend standards
+
+Askesis UI is **Expo + React Native + expo-router**, not Vue and not Tailwind. There are **no `.vue` files** and no NativeWind/Tailwind classes in this repo. If you encounter a Vue/Tailwind suggestion, discard it and follow the conventions below.
+
+## Mobile-first & PWA / web canvas
+
+- Portrait-only product (`app.json` → `orientation: "portrait"`, dark `userInterfaceStyle`).
+- Root UI is wrapped in `MobileCanvas` — on web widths **> 430px**, content sits in a centered phone frame (`MOBILE_MAX_WIDTH = 430` in `src/constants/layout.ts`).
+- Design for a single phone column first; do not build desktop multi-column dashboards.
+- Respect floating tab bar insets: use `FLOATING_NAV_CONTENT_INSET` (via `Screen` or manually) so content clears `FloatingPillTabBar`.
+- Touch targets ≥ **44** pt (`TAB_HIT_SIZE`, primary buttons, shop rows).
+- Web preview: `npm run web`. Treat it as a phone-canvas PWA-style shell, not a wide marketing site.
+
+## Screen & composition rules
+
+- Tab screens wrap content in `<Screen title subtitle? rightSlot? scroll?>`.
+- Keep the brand signal: `Screen` already renders **ASKESIS** via `typography.brand` — do not replace it with generic headers.
+- One job per screen section; prefer existing boards (`SectionBoard`, `StarBalanceHero`, `PenaltyPanel`, `RewardsShop`) over new card systems.
+- Cards / elevated panels are for **interactive groupings** only (tasks, shop, forms) — use `colors.backgroundElevated` + `colors.border`, matching neighbors.
+- Feedback: `expo-haptics` on primary toggles/tabs; confetti via `ConfettiOverlay` for star wins; Reanimated springs where tabs already animate.
+
+## Styling conventions (exact)
+
+- **Only** React Native `StyleSheet.create` co-located in the file (or small shared style helpers). No CSS files, no styled-components, no Tailwind className strings.
+- Colors from `src/theme/colors.ts` only:
+
+  | Token | Hex | Use |
+  | --- | --- | --- |
+  | `background` | `#121824` | Base |
+  | `backgroundElevated` | `#1A2233` | Panels |
+  | `amber` | `#FFBF00` | Brand / CTAs |
+  | `cyan` | `#00E5FF` | Secondary accents |
+  | `emerald` | `#00E676` | Success / metrics |
+  | `crimson` | `#FF1744` | Penalties / danger |
+  | `textPrimary` / `textSecondary` / `textDim` | … | Copy hierarchy |
+
+- Typography from `src/theme/typography.ts` / `fonts`:
+  - Display / timer / brand → **Press Start 2P** (`fonts.display`, `typography.brand|pixelTitle|pixelTimer`)
+  - Body / UI → **DM Sans** (`typography.h1|h2|body|label|metric`)
+- `PrimaryButton` tones: `'amber' | 'cyan' | 'emerald' | 'crimson' | 'muted'`.
+- Gradients: follow `Screen` / existing `LinearGradient` usage — deep slate variants, not purple/indigo AI-default palettes.
+- Avoid flat undecorated full-bleed white/light themes; this product is intentionally dark and high-contrast.
+
+## Component modularity
+
+- Put reusable UI in `src/components/`; keep route files in `app/(tabs)/` thin.
+- Prefer composing `Field`, `NativeSlider` / `DurationSlider`, `TaskToggle`, `PrimaryButton` before inventing inputs.
+- Forms that persist must call Zustand stores → services; never write storage from a component.
+- Imports: match file-local style (today: relative `../../src/...` from `app/`). Do not mass-migrate to `@/` unless the task explicitly includes it.
+
+## Expo Router specifics
+
+- New tabs/screens belong under `app/` with matching `_layout` registration.
+- Preserve custom `FloatingPillTabBar` unless the approved blueprint replaces navigation.
+- Typed routes are enabled — do not break `expo-router` file conventions.
+
+## Checklist before finishing UI work
+
+- [ ] Looks correct in a ~390–430px wide column
+- [ ] Clears floating nav + safe areas
+- [ ] Uses theme tokens (no raw hex except when extending `colors.ts`)
+- [ ] Uses `StyleSheet.create`
+- [ ] `npm run typecheck` passes
