@@ -1,0 +1,74 @@
+---
+description: Askesis fitness & nutrition domain — calisthenics progression, workout volume, 19/5 intermittent fasting, macro/calorie targets, STAR behavioral economy. Request when changing journal workouts, daily macros, fasting logic, phases, or star penalties tied to discipline rules.
+alwaysApply: false
+---
+
+# Fitness & nutrition domain
+
+Apply this rule whenever work touches reconstruction metrics, fasting, workouts, macros, phases, or STAR discipline rules tied to those behaviors.
+
+Canonical product intent lives in `3_Month_Reconstruction_Blueprint.md`. **Runtime truth** lives in `src/models/types.ts`, `src/utils/economy.ts`, `src/constants/starFramework.ts`, and the journal/star stores. Prefer code when they diverge.
+
+## Body recomposition phases
+
+Profile fields: `currentWeight`, `targetWeight`, `currentPhase: 1 | 2 | 3`, `waterTargetMl` (default **4000** ml).
+
+| Phase | Weeks | Weight | Calories | Macros (P / C / F g) | Running | Calisthenics |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 Structural Accumulation | 1–4 | 87 → 83 kg | 2100 | 160 / 200 / 73 | 2.5–3.5 km intervals ~7:00–7:30 /km | 3 sets / pattern @ **3 RIR** |
+| 2 Metabolic Engine | 5–8 | 83 → 78 kg | 1900 | 165 / 160 / 66 | 4–5 km longer blocks ~7:00 /km | Progressions (e.g. decline push-ups) @ **2 RIR** |
+| 3 Peak Consolidation | 9–12 | 78 → 72–74 kg | 1750 | 170 / 130 / 61 | 5–6 km continuous ~6:30 /km | High-volume circuits; final sets @ **1 RIR** |
+
+Journal defaults today mirror Phase 1 macros. When adding phase-aware UI or validators, derive targets from phase — do not scatter magic numbers across screens.
+
+## Hydration
+
+- Daily target **3.5–4.0 L** (`waterTargetMl: 4000` on default profile).
+- Track via `DailyLog.waterIntakeMl`.
+- Morning rule (product): 500–700 ml on waking before activity.
+
+## 19/5 intermittent fasting
+
+- Feeding window: **8:00 AM – 1:00 PM** (19 hours fasting / 5 hours feeding).
+- Represented as ledger section/task `sec_fasting` / `fasting_window` and flags `DailyLog.fastingWindowMet`.
+- Do not invent a separate fasting countdown unless the approved blueprint adds one; the Tomodachi **timer** is for deep work, not IF.
+- Orthodox Wed/Fri vegan fasts: same calorie + protein targets from vegan sources; drop added fats near zero. Product bonus `PERFECT_FAST_BONUS = 3.0` exists in `starFramework.ts` but is **unused** in runtime — wire it deliberately if implementing, do not assume it already applies.
+- Admin penalty for vegan-fast violation: see `PENALTIES` (−1.0).
+
+## Workout volume tracking
+
+`WorkoutLog` (`type: 'calisthenics' | 'running'`):
+
+- Running: `distanceKm`, `durationMin`, `paceMinKm`
+- Calisthenics: `calisthenicsReps: Record<string, number[]>` (movement → sets)
+- `rirTarget` aligned to phase table above
+- `physicalNotes` for joint/recovery context
+
+Persist only through `journalService` (Firestore `workout_logs` or local append). Keep comma-list → number[] parsing consistent with `journalStore` / journal screen.
+
+## Macros & calories
+
+On `DailyLog`: `totalCalories`, `proteinG`, `carbsG`, `fatsG`.
+
+- Validate and display against the **active phase** targets when building nutrition UX.
+- Nicotine slips: `nicotineSlips` on daily log; deep-work section expects zero slips for full credit (product rule).
+
+## STAR economy coupling
+
+Use `src/utils/economy.ts` only:
+
+- `taskValue` = `sectionValue / taskCount`
+- `slipPenalty` = 50% of task value
+- Critical miss = extra 50% of `sectionValue` when every task in the section is `slip`
+- Shop lock when `starBank < 0`; unlock target `ceil(|balance| * 1.5)`
+- Negative balances are allowed — **do not** clamp to zero
+
+Seed sections: Morning Crucible, Intermittent Fasting, Deep Work Blocks, Evening Routine (`DEFAULT_SECTIONS`).
+
+Static admin penalties in `PENALTIES` (`starFramework.ts`) are separate from dynamic section slip math — apply via `starLedger.applyDelta` / store `applyPenalty`, not by inventing parallel deduction paths.
+
+## Implementation expectations
+
+- Extend types + normalizers when adding fields.
+- Keep domain formulas in utils/services; screens only bind UI.
+- Mention phase, RIR, feeding window, and macro targets explicitly in plans that touch this domain.
